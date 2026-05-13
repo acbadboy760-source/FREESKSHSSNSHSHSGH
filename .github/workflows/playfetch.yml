@@ -1,0 +1,76 @@
+name: PlayFetch - Google Play APK Downloader
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_url:
+        description: 'لینک گوگل پلی برنامه'
+        required: true
+      version_code:
+        description: 'کد نسخه (Version Code) - خالی بذار برای آخرین نسخه'
+        required: false
+      device:
+        description: 'نوع دستگاه'
+        required: true
+        default: 'phone'
+        type: choice
+        options:
+          - phone
+          - tablet
+          - tv
+      arch:
+        description: 'معماری پردازنده'
+        required: true
+        default: 'arm64-v8a'
+        type: choice
+        options:
+          - arm64-v8a
+          - armeabi-v7a
+          - x86_64
+          - x86
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: دریافت PlayRetrieve
+        run: git clone https://github.com/MuhammadKhizerJaved/PlayRetrieve.git /tmp/PlayRetrieve
+
+      - name: نصب پیش‌نیاز
+        run: pip3 install requests
+
+      - name: نمایش لیست نسخه‌های موجود
+        env:
+          APP_URL: ${{ github.event.inputs.app_url }}
+        run: |
+          python3 /tmp/PlayRetrieve/PlayRetrieve.py --url "$APP_URL" -lv
+
+      - name: دانلود فایل APK
+        env:
+          APP_URL: ${{ github.event.inputs.app_url }}
+          VERSION_CODE: ${{ github.event.inputs.version_code }}
+          DEVICE: ${{ github.event.inputs.device }}
+          ARCH: ${{ github.event.inputs.arch }}
+        run: |
+          if [ -z "$VERSION_CODE" ]; then
+            python3 /tmp/PlayRetrieve/PlayRetrieve.py --url "$APP_URL" --device "$DEVICE" --arch "$ARCH"
+          else
+            python3 /tmp/PlayRetrieve/PlayRetrieve.py --url "$APP_URL" -dv "$VERSION_CODE" --device "$DEVICE" --arch "$ARCH"
+          fi
+
+      - name: بررسی نسخه دقیق APK
+        run: |
+          sudo apt-get update && sudo apt-get install -y aapt
+          APK_FILE=$(ls *.apk 2>/dev/null | head -1)
+          if [ -n "$APK_FILE" ]; then
+            echo "📱 اطلاعات نسخه فایل APK دانلود شده:"
+            aapt dump badging "$APK_FILE" | grep -E "versionCode|versionName|native-code"
+          fi
+
+      - name: آپلود فایل APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: playfetch-apk
+          path: "*.apk"
