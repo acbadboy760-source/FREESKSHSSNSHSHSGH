@@ -7,7 +7,7 @@ on:
         description: 'لینک گوگل پلی برنامه'
         required: true
       version_code:
-        description: 'کد نسخه (Version Code) - خالی بذار برای آخرین نسخه'
+        description: 'کد نسخه (Version Code) - خالی برای آخرین نسخه'
         required: false
       device:
         description: 'نوع دستگاه'
@@ -38,8 +38,8 @@ jobs:
       - name: دریافت PlayRetrieve
         run: git clone https://github.com/MuhammadKhizerJaved/PlayRetrieve.git /tmp/PlayRetrieve
 
-      - name: نصب پیش‌نیاز
-        run: pip3 install requests
+      - name: نصب پیش‌نیازها
+        run: pip3 install requests beautifulsoup4
 
       - name: نمایش لیست نسخه‌های موجود
         env:
