@@ -38,8 +38,13 @@ jobs:
       - name: دریافت PlayRetrieve
         run: git clone https://github.com/MuhammadKhizerJaved/PlayRetrieve.git /tmp/PlayRetrieve
 
-      - name: نصب پیش‌نیازها
-        run: pip3 install requests beautifulsoup4
+      - name: نصب تمام پیش‌نیازهای PlayRetrieve
+        run: |
+          if [ -f /tmp/PlayRetrieve/requirements.txt ]; then
+            pip3 install -r /tmp/PlayRetrieve/requirements.txt
+          else
+            pip3 install requests beautifulsoup4 tqdm
+          fi
 
       - name: نمایش لیست نسخه‌های موجود
         env:
